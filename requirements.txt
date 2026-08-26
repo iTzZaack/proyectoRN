@@ -1,0 +1,23 @@
+streamlit>=1.38
+python-dotenv>=1.0
+ollama>=0.3.3
+openai-whisper>=20231117
+edge-tts>=6.1.12
+sounddevice>=0.4.6
+scipy>=1.11
+numpy>=1.26
+transformers>=4.44
+torch>=2.3
+matplotlib>=3.9
+customtkinter>=5.2
+Pillow>=10.0
+SpeechRecognition>=3.10
+PyAudio>=0.2.14
+playsound==1.2.2
+pygame>=2.5
+pywinauto>=0.6.8
+yt-dlp>=2024.8.6
+
+# --- Funciones ampliadas (control de apps y comparación de modelos) ---
+pywinauto>=0.6.8      # controla la Calculadora de Windows escribiendo teclas de verdad
+yt-dlp>=2024.8.6       # busca en YouTube y resuelve el video real (sin API key de Google)
