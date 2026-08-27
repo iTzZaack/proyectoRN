@@ -1,40 +1,91 @@
-# Mini-JARVIS
+# Mini-JARVIS — Kry
 
 Asistente de voz conversacional basado en un LLM local (Ollama), con pipeline
-STT → LLM → TTS, memoria conversacional, interfaz con estado en Streamlit y
-un módulo de exploración de la arquitectura Transformer (tokenización,
-embeddings y self-attention).
+STT → LLM → TTS, memoria conversacional, interfaz de escritorio con avatar
+animado y un módulo de exploración de la arquitectura Transformer
+(tokenización, embeddings y self-attention).
+
+> ⚠️ **Este proyecto requiere Windows.** La apertura de aplicaciones
+> instaladas, la automatización de la Calculadora (`pywinauto`) y varias
+> funciones del sistema dependen de APIs exclusivas de Windows (accesos
+> directos del Menú Inicio, `os.startfile`, comandos `start`). La app web
+> (Streamlit, `app.py`) es la única parte que podría probarse en otro
+> sistema operativo, pero sin esas funciones extra.
 
 ## Requisitos previos
 
-- Python 3.10+
-- [Ollama](https://ollama.com) instalado y corriendo localmente
-- ffmpeg instalado en el sistema (requerido por Whisper)
+- **Windows 10/11** (ver aviso arriba).
+- Python 3.10+, agregado al PATH (`python --version` debe funcionar desde
+  cualquier carpeta).
+- [Ollama](https://ollama.com) instalado y corriendo localmente.
+- ffmpeg instalado en el sistema (requerido por Whisper). En Windows, la
+  forma más simple es con winget desde PowerShell:
+  ```powershell
+  winget install ffmpeg
+  ```
+  Después de instalarlo, cierra y vuelve a abrir la terminal para que
+  reconozca el comando `ffmpeg`.
+- Un micrófono y parlantes/audífonos funcionando (para la activación por
+  voz y las respuestas habladas).
 
 ## Instalación
 
-```bash
+```powershell
 # 1. Clonar el repositorio
 git clone <url-del-repo>
 cd mini-jarvis
 
 # 2. Crear entorno virtual
 python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
 
-# 3. Instalar dependencias
+# 3. Activar el entorno virtual (PowerShell)
+.\venv\Scripts\Activate.ps1
+```
+
+Si el paso 3 falla con un error de **"la ejecución de scripts está
+deshabilitada en este sistema"**, es la política de ejecución de
+PowerShell bloqueando el script de activación (no un problema del
+proyecto). Se soluciona una sola vez por usuario:
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+Confirma con "S" y vuelve a correr `.\venv\Scripts\Activate.ps1`. Si en
+cambio usas CMD en vez de PowerShell, el comando de activación es
+`venv\Scripts\activate.bat`.
+
+Con el entorno ya activado (aparece `(venv)` al inicio de la línea):
+
+```powershell
+# 4. Instalar dependencias
 pip install -r requirements.txt
+```
 
-# 4. Configurar variables de entorno
-cp .env.example .env
+**Si `pip install` falla específicamente en `PyAudio`**, es un problema
+conocido de Windows (PyAudio necesita compilar contra PortAudio y suele
+faltar el compilador de C++). Solución:
+```powershell
+pip install pipwin
+pipwin install pyaudio
+pip install -r requirements.txt   # vuelve a correr para instalar el resto
+```
+
+```powershell
+# 5. Configurar variables de entorno
+copy .env.example .env
 # Ajusta OLLAMA_MODEL, TTS_VOICE, etc. si hace falta
 
-# 5. Descargar el modelo LLM en Ollama
-# Se usa un modelo liviano por defecto para garantizar que el proyecto
-# corra en máquinas con recursos limitados (ver "Elección del modelo" abajo).
+# 6. Descargar AMBOS modelos LLM en Ollama
+# Se descargan los dos porque el proyecto permite cambiar de modelo en
+# caliente y comparar sus respuestas (ver "Selección y comparación de
+# modelos" más abajo) — con solo uno descargado, esas dos funciones fallan.
 ollama pull phi3:mini
+ollama pull llama3.1:8b
 ollama serve   # dejar corriendo en una terminal aparte
 ```
+
+La primera vez que se ejecute la app, Whisper también descargará su
+modelo (`small`, unos cientos de MB) automáticamente — asegúrate de tener
+conexión a internet la primera vez.
 
 ### Elección del modelo
 
@@ -42,14 +93,10 @@ Por defecto el proyecto usa `phi3:mini` (~3.8B parámetros) porque el
 requisito del proyecto exige que se pueda ejecutar "en una máquina distinta
 a la del equipo", incluyendo equipos con recursos limitados (como los del
 instituto). Este modelo corre razonablemente bien incluso sin GPU dedicada.
+`llama3.1:8b` queda disponible para comparar o cambiar a mejor calidad de
+respuesta en máquinas más potentes, cambiando `OLLAMA_MODEL` en tu copia
+local de `.env` (nunca en `.env.example`):
 
-Si tu máquina tiene más recursos (GPU dedicada, 16GB+ RAM), puedes usar un
-modelo más grande para mejor calidad de respuesta cambiando `OLLAMA_MODEL`
-en tu copia local de `.env` (nunca en `.env.example`), por ejemplo:
-
-```bash
-ollama pull llama3.1:8b
-```
 ```
 OLLAMA_MODEL=llama3.1:8b
 ```
@@ -205,7 +252,7 @@ mini-jarvis/
 
 ## Modelos y proveedores usados
 
-- LLM: Ollama (modelo configurable en `.env`, por defecto `llama3.1`)
+- LLM: Ollama (modelo configurable en `.env`, por defecto `phi3:mini`)
 - STT: OpenAI Whisper (ejecución local)
 - TTS: edge-tts (Microsoft Edge, sin API key)
 - Exploración de arquitectura: `dccuchile/bert-base-spanish-wwm-uncased` vía Hugging Face Transformers
