@@ -77,4 +77,4 @@ def _plot_attention(attn_matrix, tokens, layer, head, save_path):
 
 if __name__ == "__main__":
     # Ejemplo de uso directo: python -m exploration.attention_explorer
-    explore_text("JARVIS, enciende las luces del laboratorio.")
+    explore_text("Oye Kry, enciende las luces del laboratorio.")
