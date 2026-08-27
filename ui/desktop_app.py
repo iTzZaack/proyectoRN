@@ -334,9 +334,15 @@ class KryApp(ctk.CTk):
         if self.is_muted:
             self.mute_btn.configure(text="🔇 Muteado", fg_color=RED_ALERT)
             pygame.mixer.music.set_volume(0.0)
+            # Silenciar todos los canales en reproducción inmediatamente
+            for i in range(pygame.mixer.get_num_channels()):
+                pygame.mixer.Channel(i).set_volume(0.0)
         else:
             self.mute_btn.configure(text="🎙 Mutear", fg_color=PANEL_BG)
             pygame.mixer.music.set_volume(1.0)
+            # Restaurar volumen en todos los canales
+            for i in range(pygame.mixer.get_num_channels()):
+                pygame.mixer.Channel(i).set_volume(1.0)
 
     def _add_chat_hint(self):
         subtitle = ctk.CTkLabel(
@@ -436,6 +442,7 @@ class KryApp(ctk.CTk):
         self.stop_event.set()
         if pygame.mixer.music.get_busy():
             pygame.mixer.music.stop()
+        pygame.mixer.stop()
         self.record_circle_btn.configure(fg_color=PURPLE_ACCENT)
         self.set_status("Cancelado")
 
@@ -492,31 +499,45 @@ class KryApp(ctk.CTk):
         threading.Thread(target=_run, daemon=True).start()
 
     def _speak(self, text: str):
-        out_path = os.path.join(tempfile.gettempdir(), f"kry_reply_{uuid.uuid4().hex}.mp3")
+        out_path = os.path.join(tempfile.gettempdir(), f"kry_reply_{uuid.uuid4().hex}.wav")
         result_path = text_to_speech(text, output_path=out_path)
-        if not result_path:
+        
+        if not result_path or not os.path.exists(result_path):
             self.append_message("Sistema", "Error al generar audio de respuesta.")
             return
+
         if self.cancel_event.is_set():
             return
 
         self.after(0, self._start_talk_animation)
-        pygame.mixer.music.load(result_path)
-        pygame.mixer.music.play()
-        while pygame.mixer.music.get_busy():
-            if self.cancel_event.is_set():
-                pygame.mixer.music.stop()
-                break
-            time.sleep(0.1)
-        self.after(0, self._stop_talk_animation)
 
         try:
-            pygame.mixer.music.unload()
-            os.remove(result_path)
-        except OSError:
-            pass
+            sound = pygame.mixer.Sound(result_path)
+            channel = sound.play()
+
+            # Bucle de reproducción actualizando el volumen en tiempo real
+            while channel.get_busy():
+                if self.cancel_event.is_set():
+                    channel.stop()
+                    break
+                
+                # Sincroniza dinámicamente el volumen si el usuario cliquea "Mutear" durante el audio
+                channel.set_volume(0.0 if self.is_muted else 1.0)
+                time.sleep(0.05)
+
+        except Exception as exc:
+            log("desktop_app", f"ERROR reproduciendo audio: {exc}")
+        finally:
+            self.after(0, self._stop_talk_animation)
+            try:
+                if os.path.exists(result_path):
+                    os.remove(result_path)
+            except OSError:
+                pass
 
     def _play_tone(self, path: str):
+        if self.is_muted:
+            return
         try:
             pygame.mixer.Sound(path).play()
         except Exception as exc:
