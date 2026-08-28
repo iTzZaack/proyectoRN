@@ -283,7 +283,7 @@ mini-jarvis/
 ├── llm/ollama_client.py         # Cliente LLM + memoria conversacional
 ├── llm/model_commands.py        # Cambio y comparación de modelos en caliente
 ├── llm/system_prompt.py         # Personalidad de Kry
-├── tts/                         # Texto -> voz (Piper, local)
+├── tts/piper_tts_engine.py                      # Texto -> voz (Piper, local)
 ├── utils/system_functions.py    # Funciones del sistema (apps, calculadora, temporizador, YouTube, Google)
 ├── exploration/attention_explorer.py  # Tokenización/embeddings/atención
 ├── models/vosk/                 # Modelo de wake word (incluido en el repo, ~57MB)
