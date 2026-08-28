@@ -22,7 +22,7 @@ from PIL import Image, ImageTk
 from stt.wake_word import listen_for_wake_word
 from stt.audio_recorder import record_command
 from stt.whisper_stt import transcribe_audio
-from tts.edge_tts_engine import text_to_speech
+from tts.piper_tts_engine import text_to_speech
 from llm.ollama_client import OllamaChatClient
 from utils.logger import log
 from utils.system_functions import try_handle_system_function, resolve_pending_app_choice

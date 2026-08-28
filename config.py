@@ -21,7 +21,6 @@ WHISPER_MODEL_SIZE = os.getenv("WHISPER_MODEL_SIZE", "small")  # tiny, base, sma
 # "small" reconoce notablemente mejor el español hablado rápido/informal que
 # "base", y sigue corriendo sin GPU dedicada (un poco más lento al cargar,
 # no en cada transcripción). Si tu máquina es muy limitada, volvé a "base".
-TTS_VOICE = os.getenv("TTS_VOICE", "es-ES-ElviraNeural")  # voz femenina en español
 MAX_HISTORY_TURNS = int(os.getenv("MAX_HISTORY_TURNS", "10"))
 
 # Palabra (o frase corta) de activación. En minúsculas y sin tildes para

@@ -9,7 +9,7 @@ import tempfile
 import os
 
 from stt.whisper_stt import transcribe_audio
-from tts.edge_tts_engine import text_to_speech
+from tts.piper_tts_engine import text_to_speech
 from llm.ollama_client import OllamaChatClient
 from utils.logger import log
 from utils.system_functions import try_handle_system_function, resolve_pending_app_choice
@@ -101,7 +101,7 @@ if audio_value is not None:
 
         # 4. RESPONDIENDO -> TTS
         set_status("Respondiendo")
-        audio_out_path = os.path.join(tempfile.gettempdir(), "jarvis_reply.mp3")
+        audio_out_path = os.path.join(tempfile.gettempdir(), "kry_reply.wav")
         result_path = text_to_speech(reply, output_path=audio_out_path)
 
         if result_path:
