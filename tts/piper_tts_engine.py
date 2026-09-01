@@ -3,6 +3,7 @@ import os
 import traceback
 import tempfile
 import uuid
+import unicodedata
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -16,7 +17,14 @@ class PiperTTS:
     def generate_audio_file(self, text: str, output_path: str = None) -> str | None:
         if not text or not text.strip():
             return None
-        
+
+        # Normaliza el texto: junta las tildes/acentos separados con su
+        # vocal en un solo carácter (á, é, í, ...). Sin esto, Piper a
+        # veces "lee" la tilde por separado en vez de aplicarla a la
+        # vocal, sobre todo con texto que pasó por varias transformaciones
+        # de string (como la respuesta del LLM).
+        text = unicodedata.normalize("NFC", text)
+
         if not output_path:
             output_path = os.path.join(tempfile.gettempdir(), f"piper_{uuid.uuid4().hex}.wav")
 
